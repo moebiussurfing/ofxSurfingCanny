@@ -6,23 +6,26 @@
 // https://towardsdatascience.com/canny-edge-detection-step-by-step-in-python-computer-vision-b49c3a2d8123
 // https://docs.opencv.org/2.4/doc/tutorials/imgproc/imgtrans/canny_detector/canny_detector.html
 
+
 #define PI      3.14159265358979323
 #define PI_2    1.57079632679
 #define PI_4    0.78539816339
 #define PI_8    0.39269908169
 
+
 #define PI_7_8  2.7488936
 #define PI_3_8  1.178097
 #define PI_5_8  1.9634954
 
+
 uniform sampler2DRect       u_tex_unit0;
 uniform vec2                u_resImg;
 
-// Adjustable parameters
-uniform float               u_highThreshold;
-uniform float               u_lowThreshold;
-uniform float               u_gradientScale;
-uniform int                 u_useGaussian;
+uniform float               u_strength;
+
+float highThreshold = .35;
+float lowThreshold = .1;
+
 
 // ==== Gaussian filtering ==== //
 const int kernelSize = 5;
@@ -51,18 +54,17 @@ vec4 Gaussian(sampler2DRect tex, vec2 uv){
 
 // ==== Gaussian filtering ==== //
 
+
 float GREYCol(vec3 rgb){
     return .3086 * rgb.r + .6094 * rgb.g + 0.0820 * rgb.b;
+    
 }
 
 float GREYTex(sampler2DRect tex, vec2 uv){
-    vec3 rgb;
-    if(u_useGaussian == 1){
-        rgb = Gaussian(tex, uv).rgb;
-    } else {
-        rgb = texture2DRect(tex, uv).rgb;
-    }
+//    vec3 rgb = Gaussian(tex, uv).rgb;
+    vec3 rgb = texture2DRect(tex, uv).rgb;
     return GREYCol(rgb);
+    
 }
 
 vec2  offsetTheta(float val){
@@ -91,6 +93,7 @@ vec2 convertAngle(float theta){
     return offset;
 }
 
+
 mat3 Gx = mat3( -1.0, 0.0, 1.0,
                 -2.0, 0.0, 2.0,
                 -1.0, 0.0, 1.0 );
@@ -116,18 +119,17 @@ float Sobel(sampler2DRect tex, vec2 uv){
             }
         }
         
-        // Apply gradient scale
-        strength = pow(colX * colX + colY * colY, .5) * u_gradientScale;
+        strength = pow(colX * colX + colY * colY, (.5));
         thetaOffsetDir = convertAngle(atan(colY / colX));
     }
     
-    // Use uniform thresholds
-    if(strength >= u_highThreshold)col = 1.0;
-    if(strength < u_lowThreshold){
+    
+    if(strength >= highThreshold)col = 1.0;
+    if(strength < lowThreshold){
         col = 0.;
     }
     
-    if((strength >= u_lowThreshold && strength < u_highThreshold) || (col == 1.) ){
+    if((strength >= lowThreshold && strength < highThreshold) || (col == 1.) ){
         bool isNeighBoorStrong = false;
 
         float neighboorStrength = 0.;
@@ -145,8 +147,8 @@ float Sobel(sampler2DRect tex, vec2 uv){
                 }
             }
             
-            neighboorStrength = pow(colX * colX + colY * colY, .5) * u_gradientScale;
-            if(neighboorStrength > u_highThreshold)isNeighBoorStrong=true;
+            neighboorStrength = pow(colX * colX + colY * colY, .5);
+            if(neighboorStrength > highThreshold)isNeighBoorStrong=true;
             
         }
         
@@ -163,6 +165,9 @@ float Sobel(sampler2DRect tex, vec2 uv){
 
 void main( void )
 {
+    
     vec2 uv_Norm = vec2(gl_TexCoord[0].st / u_resImg);
     gl_FragColor = vec4(vec3(Sobel(u_tex_unit0, gl_TexCoord[0].st)), 1.0);
+    
 }
+
