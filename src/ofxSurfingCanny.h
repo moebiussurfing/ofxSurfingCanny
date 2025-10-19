@@ -15,20 +15,23 @@
 class ofxSurfingCanny {
 
 public:
-
 	ofxSurfingCanny() {
 		ofLogNotice("ofxSurfingCanny") << "ofxSurfingCanny()";
 	}
 
 private:
-
 	ofShader eDetector, gaussian;
 	glm::vec2 size;
-	ofFbo f;
+	ofFbo fboInput; // Input texture for processing
+	ofFbo fboOutput; // Processed output
+	ofTexture * texInput; // Pointer to input texture
+	ofFbo fboGaussian; // En vez de crear uno temporal cada frame
+
+	bool bNeedUpdate = false;
 
 public:
-
 	ofParameterGroup parameters; // Preset settings
+	ofParameter<bool> bEnable;
 	ofParameter<float> highThreshold;
 	ofParameter<float> lowThreshold;
 	ofParameter<float> gradientScale;
@@ -44,41 +47,38 @@ public:
 	ofParameter<bool> bGui;
 
 private:
-
 	// Lambda event listeners
 	ofEventListener e_vResetButton;
 	ofEventListener e_vSaveButton;
 	ofEventListener e_vLoadButton;
-	ofEventListener e_bAutoSaveLoad; // required to improve user workflow
+	ofEventListener e_bAutoSaveLoad;
+	ofEventListener e_bEnable;
 
 	bool bEnableSettings = true; // To disable settings saving/loading (ie: handled in ofApp)
 
 public:
-
 	// GUI
 	ofxPanel gui;
 
 	//----------------------------------
-	void setDisableSettings(bool bDisable) { // To disable settings saving/loading (ie: handled in ofApp)
+	void setDisableSettings(bool bDisable) {
 		ofLogNotice("ofxSurfingCanny") << "setDisableSettings() bEnableSettings: " << bEnableSettings;
-
 		bEnableSettings = !bDisable;
 	}
 
 private:
-
 	// Default values
+	const bool DEFAULT_ENABLE = true;
 	const float DEFAULT_HIGH_THRESHOLD = 0.35f;
 	const float DEFAULT_LOW_THRESHOLD = 0.1f;
 	const float DEFAULT_GRADIENT_SCALE = 1.0f;
 	const bool DEFAULT_USE_GAUSSIAN = true;
 	const bool DEFAULT_AUTO_SAVE = true;
 
-	// `bin/data/path_folder` folder containering settings files
+	// `bin/data/path_folder` folder containing settings files
 	std::string path_folder = "ofxSurfingCanny";
 
 public:
-
 	//----------------------------------
 	void setup() {
 		ofLogNotice("ofxSurfingCanny") << "setup()";
@@ -89,7 +89,21 @@ public:
 		eDetector.load("../../../../../addons/ofxSurfingCanny/src/Shaders/sobel");
 
 		size = glm::vec2(ofGetWidth(), ofGetHeight());
-		f.allocate(size.x, size.y);
+		fboInput.allocate(size.x, size.y, GL_RGBA);
+		fboOutput.allocate(size.x, size.y, GL_RGBA);
+		fboGaussian.allocate(size.x, size.y, GL_RGBA);
+
+		fboInput.begin();
+		ofClear(0, 0, 0, 255);
+		fboInput.end();
+
+		fboOutput.begin();
+		ofClear(0, 0, 0, 255);
+		fboOutput.end();
+
+		fboGaussian.begin();
+		ofClear(0, 0, 0, 255);
+		fboGaussian.end();
 
 		setupParameters();
 		setupCallbacks();
@@ -101,13 +115,13 @@ public:
 	}
 
 private:
-
 	//----------------------------------
 	void setupParameters() {
 		ofLogNotice("ofxSurfingCanny") << "setupParameters()";
 
 		// Setup parameters with default values
 		parameters.setName("Canny Edge");
+		parameters.add(bEnable.set("Enable", DEFAULT_ENABLE));
 		parameters.add(highThreshold.set("High Threshold", DEFAULT_HIGH_THRESHOLD, 0.0, 1.0));
 		parameters.add(lowThreshold.set("Low Threshold", DEFAULT_LOW_THRESHOLD, 0.0, 1.0));
 		parameters.add(gradientScale.set("Gradient Scale", DEFAULT_GRADIENT_SCALE, 0.1, 5.0));
@@ -141,6 +155,9 @@ private:
 		e_bAutoSaveLoad = bAutoSaveLoad.newListener([this](bool & b) {
 			this->save(parametersSession);
 		});
+		e_bEnable = bEnable.newListener([this](bool & b) {
+			if (b) bNeedUpdate = true;
+		});
 	}
 
 	//----------------------------------
@@ -168,11 +185,11 @@ private:
 	}
 
 public:
-
 	//----------------------------------
 	void resetToDefaults() {
 		ofLogNotice("ofxSurfingCanny") << "resetToDefaults()";
 
+		bEnable = DEFAULT_ENABLE;
 		highThreshold = DEFAULT_HIGH_THRESHOLD;
 		lowThreshold = DEFAULT_LOW_THRESHOLD;
 		gradientScale = DEFAULT_GRADIENT_SCALE;
@@ -180,34 +197,128 @@ public:
 	}
 
 	//----------------------------------
-	void begin() {
-		f.begin();
-		ofClear(0);
+	// API similar to ofxSurfingDepthMap
+	void update() {
+		if (!bEnable) return;
+		if (!bNeedUpdate) return;
 
-		if (useGaussian) {
-			gaussian.begin();
-		}
+		processTexture();
+		bNeedUpdate = false;
 	}
 
 	//----------------------------------
-	void draw() {
+	void begin() {
+		if (!bEnable) return;
+
+		fboInput.begin();
+		ofClear(0, 0, 0, 255);
 	}
 
 	//----------------------------------
 	void end() {
+		if (!bEnable) return;
+
+		fboInput.end();
+		texInput = &fboInput.getTexture();
+		bNeedUpdate = true;
+	}
+
+private:
+	//----------------------------------
+	void processTexture() {
+		if (texInput == nullptr) return;
+
+		// Apply Gaussian if enabled
 		if (useGaussian) {
+			fboGaussian.begin();
+			ofClear(0, 0, 0, 255);
+
+			// Enable texture and bind it
+			ofEnableArbTex();
+			texInput->bind();
+
+			gaussian.begin();
+			gaussian.setUniform2f("u_resImg", size);
+
+			// Draw a quad with correct texture coordinates for ARB_texture_rectangle
+			glBegin(GL_QUADS);
+			glTexCoord2f(0, 0);
+			glVertex2f(0, 0);
+			glTexCoord2f(size.x, 0);
+			glVertex2f(size.x, 0);
+			glTexCoord2f(size.x, size.y);
+			glVertex2f(size.x, size.y);
+			glTexCoord2f(0, size.y);
+			glVertex2f(0, size.y);
+			glEnd();
+
 			gaussian.end();
+			texInput->unbind();
+			fboGaussian.end();
+
+			texInput = &fboGaussian.getTexture();
 		}
-		f.end();
+
+		// Apply Sobel edge detection
+		fboOutput.begin();
+		ofClear(0, 0, 0, 255);
+
+		// Enable texture and bind it
+		ofEnableArbTex();
+		texInput->bind();
 
 		eDetector.begin();
 		eDetector.setUniform2f("u_resImg", size);
 		eDetector.setUniform1f("u_highThreshold", highThreshold);
 		eDetector.setUniform1f("u_lowThreshold", lowThreshold);
 		eDetector.setUniform1f("u_gradientScale", gradientScale);
-		eDetector.setUniform1i("u_useGaussian", useGaussian ? 1 : 0);
-		f.draw(0, 0);
+		eDetector.setUniform1i("u_useGaussian", 0); // Always 0 here, gaussian is applied before
+
+		// Draw a quad with correct texture coordinates for ARB_texture_rectangle
+		glBegin(GL_QUADS);
+		glTexCoord2f(0, 0);
+		glVertex2f(0, 0);
+		glTexCoord2f(size.x, 0);
+		glVertex2f(size.x, 0);
+		glTexCoord2f(size.x, size.y);
+		glVertex2f(size.x, size.y);
+		glTexCoord2f(0, size.y);
+		glVertex2f(0, size.y);
+		glEnd();
+
 		eDetector.end();
+		texInput->unbind();
+		fboOutput.end();
+	}
+
+public:
+	//----------------------------------
+	// Draw processed output at position with size
+	void draw(float x = 0, float y = 0, float w = -1, float h = -1) {
+		if (!bEnable) return;
+
+		if (w == -1) w = size.x;
+		if (h == -1) h = size.y;
+
+		fboOutput.draw(x, y, w, h);
+	}
+
+	//----------------------------------
+	// Draw at position maintaining aspect ratio
+	void draw(float x, float y) {
+		draw(x, y, size.x, size.y);
+	}
+
+	//----------------------------------
+	// Get output texture for custom rendering
+	ofTexture & getTexture() {
+		return fboOutput.getTexture();
+	}
+
+	//----------------------------------
+	// Get output FBO
+	ofFbo & getFbo() {
+		return fboOutput;
 	}
 
 	//----------------------------------
@@ -226,15 +337,22 @@ public:
 
 	//----------------------------------
 	void toggleGui() {
-		ofLogNotice("ofxSurfingCanny") << "toggleGui() Settings auto-saved on exit";
-
+		ofLogNotice("ofxSurfingCanny") << "toggleGui()";
 		bGui = !bGui;
+	}
+
+	//----------------------------------
+	void setEnableGui(bool enable) {
+		bGui = enable;
 	}
 
 	//----------------------------------
 	void keyPressed(int key) {
 		if (key == 'g' || key == 'G') {
 			toggleGui();
+		}
+		if (key == 'e' || key == 'E') {
+			bEnable = !bEnable;
 		}
 	}
 
@@ -255,16 +373,14 @@ public:
 	//--
 
 private:
-
 	//----------------------------------
 	void load(ofParameterGroup & parameters_, std::string _path_Folder = "") {
 		ofLogNotice("ofxSurfingCanny") << "Load: " << parameters_.getName();
 
 		if (_path_Folder.empty()) _path_Folder = path_folder;
-		// Usar ofFilePath::join para construir el path relativo a /bin/data/
 		std::string filename = parameters_.getName() + ".json";
 		std::string relPath = ofFilePath::join(_path_Folder, filename);
-		std::string dataPath = ofToDataPath(relPath, true); // true = relative to data folder
+		std::string dataPath = ofToDataPath(relPath, true);
 		ofLogNotice("ofxSurfingCanny") << "dataPath: " << dataPath;
 
 		loadSettings(parameters_, dataPath);
@@ -299,7 +415,7 @@ private:
 			ofLogVerbose("ofxSurfing") << "Found settings file: " << path << " for ofParameterGroup: " << parameters.getName();
 		else
 			ofLogError("ofxSurfing") << "File " << path
-											   << " for ofParameterGroup " << parameters.getName() << " not found!";
+									 << " for ofParameterGroup " << parameters.getName() << " not found!";
 		//load if exist
 		if (b) {
 			ofJson settings;
