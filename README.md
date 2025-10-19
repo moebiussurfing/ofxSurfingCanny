@@ -1,122 +1,75 @@
-# ofxSurfingDepthMap
+# ofxSurfingCanny
 
-*Depth-map shader based add-on. Developed for seamless integration with AI workflows and real-time 3D applications.*
+*Edge detection algorithm based on an Edge Canny Detection shader add-on.  
+Developed for seamless integration with AI workflows and real-time 3D applications.*
+
+> [!NOTE]  
+> This add-on is based on [ofxEdgeCannyDetector](https://github.com/pierrextardif/ofxEdgeCannyDetector) from [pierrextardif](https://github.com/pierrextardif).  
+Check original information here: [README.md](https://github.com/pierrextardif/ofxEdgeCannyDetector/blob/master/README.md).  
+Thanks!
+
+![](before-after.png)
+
+## Added Features
+- Customize threshold parameters
+- Persistent `json` settings (preset & session)
+- Improved UI workflow
 
 ![](Screenshot.png)
-
-## Features
-
-- **3 Depth Mapping Modes**: Linear, Logarithmic, and Focus Range
-- **Manual Camera Control**: Bypass camera near/far planes with manual clipping
-- **Real-time Preview**: Toggle between color and depth map rendering
-- **ControlNet Ready**: Outputs grayscale depth maps suitable for AI processing
-- **Flexible Controls**: Contrast, brightness, gamma, and inversion parameters
-- **Auto Focus**: Intelligent depth range calculation for complex scenes
 
 ## Quick Start
 
 ```cpp
 // ofApp.h
 
-#include "ofxSurfingDepthMap.h"
+#include "ofMain.h"
+#include "ofxSurfingCanny.h"
 
-ofxSurfingDepthMap depthMap;
-ofEasyCam camera;
+ofxSurfingCanny canny;
+ofImage img;
 
 //--
 
 // ofApp.cpp
 
 // setup()
-depthMap.setup(&camera);
+canny.setup();
+img.load("TheDavid.png");
 
 // draw()
-depthMap.begin();
-{
-    camera.begin();
-    {
-        // Draw your 3D scene here
-        drawScene();
-    }
-    camera.end();
-}
-depthMap.end();
-
-depthMap.draw(0, 0);
+canny.begin();
+img.draw(0, 0);
+canny.end();
 ```
-
-## Depth Modes
-
-### 1. Linear Mode
-Direct linear mapping from near to far planes. Best for simple scenes with uniform depth distribution.
-
-### 2. Logarithmic Mode  
-Applies logarithmic curve for better perspective handling. Use `Log Power` parameter to control curve aggressiveness (0.05 = subtle, 10.0 = extreme).
-
-### 3. Focus Range Mode
-Concentrates contrast in a specific depth range, compressing everything else. Perfect for emphasizing specific subjects while de-emphasizing background/foreground.
 
 ## Key Parameters
 
-### Camera Clips
-- **Enable**: Use manual near/far planes instead of camera settings
-- **Near/Far**: Manual clipping plane distances
-
-### Focus Range
-- **Near/Far**: Depth boundaries for high contrast zone  
-- **Auto Focus**: Automatically calculates optimal focus range based on current scene
-
-### FX Tweaks
-- **Contrast**: Enhances depth separation (1.0 = neutral)
-- **Brightness**: Shifts depth map lighter/darker (0.0 = neutral)
-- **Gamma**: Adjusts response curve (1.0 = linear)
-- **Invert**: Flips depth mapping (close=black, far=white)
-
-## Example Controls
-
-- **SPACE**: Toggle depth/color view
-- **S**: Save depth map as PNG
-- **G**: Toggle GUI visibility
-- **R**: Reset
-
-## Workflow Tips
-
-1. **Start with Linear mode** for quick setup
-2. **Enable Manual Clips** for precise depth control (camera clips are often suboptimal)
-3. **Use Logarithmic mode** when linear produces flat gray areas
-4. **Try Focus Range + Auto Focus** for complex scenes with specific subjects
-5. **Adjust Contrast and Gamma** after selecting the right mode
+### ofParameter settings
+- High Threshold
+- Low Threshold 
+- Gradient Scale
+- Gaussian
 
 ## Technical Notes
 
-- Output: 1024x1024 RGBA FBO (RGB channels contain grayscale depth)
-- Depth calculation: View-space Z distance with proper perspective correction  
-- File format: PNG with embedded depth information
-- Export image files to custom folders (ie: `D:/ComfyUI/input/depth-maps/`).
-- Shader requirements: OpenGL 3.3+ (shadersGL3 folder)
-
-## Installation
-
-1. Clone to `openFrameworks/addons/`
-2. Add the addon to your project when using **Project Generator**
-3. Copy `depth.vert` and `depth.frag` to `bin/data/shadersGL3/`
-4. Include `ofxSurfingDepthMap.h` in your project
+- Output: 1024x1024 RGBA
+- File format: PNG
+- Export image files to custom folders (ie: `D:/ComfyUI/input/canny/`).
 
 ## Dependencies
 
-- openFrameworks 0.12.0+
+- openFrameworks 0.12.1+
 - ofxGui
 
 ## Tested Systems
 - Windows 11 / VS 2026 Insiders / of_v0.12.1_vs_64_release 
-- macOS Tahoe 26.0 / Xcode 26.0 / of_v0.12.1_osx_release
 
 ## Use Cases
 
-- **ControlNet Depth**: Generate depth maps for AI image generation
-- **Post-processing**: Create depth-based effects and compositing
-- **Analysis**: Visualize 3D scene depth distribution  
-- **Prototyping**: Quick depth visualization for 3D applications
+- **ControlNet Canny**: Real-time process and generate canny image files for AI image generation
+- More info: https://docs.comfy.org/tutorials/flux/flux-1-controlnet
 
 ## TODO
-- Fix GLSL 120.
+- Improve viewport custom size
+- Add enable toggle
+- Improve draw separated from begin/end process

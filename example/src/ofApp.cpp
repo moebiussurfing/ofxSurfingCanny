@@ -2,44 +2,45 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	ofSetWindowTitle("Canny Edge Detector - Real Time");
-	ofSetFrameRate(60);
-
-	// Setup edge detector (it handles everything internally)
-	edgeDetector.setup();
+	canny.setup();
 
 	// Load image
 	img.load("TheDavid.png");
-
-	ofLogNotice("ofApp") << "Setup complete";
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	// Nothing to update - parameters are handled by the addon
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-	ofBackground(0);
 
 	// Process image in real-time with current parameters
-	edgeDetector.begin();
+	canny.begin();
 	img.draw(0, 0);
-	edgeDetector.end();
+	canny.end();
 
-	// Draw addon GUI (handles everything internally)
-	edgeDetector.draw();
+	// Draw original image
+	ofPushStyle();
+	float r = img.getHeight() / (float)img.getWidth();
+	int w = 100;
+	int x = ofGetWidth() - w;
+	int y =  0;
+	img.draw(x, y, w, w * r);
+	ofNoFill();
+	ofSetColor(255);
+	ofDrawRectangle(x, y, w, w * r);
+	ofPopStyle();
+
+	canny.drawGui();
 }
 
 //--------------------------------------------------------------
 void ofApp::exit() {
-	// Let the addon handle its own cleanup
-	edgeDetector.exit();
+	canny.exit();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-	// Forward key events to addon
-	edgeDetector.keyPressed(key);
+	canny.keyPressed(key);
 }

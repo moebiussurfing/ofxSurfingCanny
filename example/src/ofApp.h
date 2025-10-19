@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxEdgeCannyDetector.hpp"
+#include "ofxSurfingCanny.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -12,6 +12,6 @@ public:
 
 	void keyPressed(int key);
 
-	ofxEdgeCannyDetector edgeDetector;
+	ofxSurfingCanny canny;
 	ofImage img;
 };

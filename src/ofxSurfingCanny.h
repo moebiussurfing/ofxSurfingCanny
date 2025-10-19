@@ -1,24 +1,23 @@
 //
-//  ofxEdgeCannyDetector.hpp
+//  ofxSurfingCanny.h
 //  example
 //
 //  Created by Pierre Tardif on 15/05/2020.
 //  Modified by moebiusSurfing 19/10/2025
 //
 
-#ifndef ofxEdgeCannyDetector_hpp
-#define ofxEdgeCannyDetector_hpp
+#pragma once
 
 #include "ofMain.h"
 #include "ofxGui.h"
 #include <stdio.h>
 
-class ofxEdgeCannyDetector {
+class ofxSurfingCanny {
 
 public:
 
-	ofxEdgeCannyDetector() {
-		ofLogNotice("ofxEdgeCannyDetector") << "ofxEdgeCannyDetector()";
+	ofxSurfingCanny() {
+		ofLogNotice("ofxSurfingCanny") << "ofxSurfingCanny()";
 	}
 
 private:
@@ -61,7 +60,7 @@ public:
 
 	//----------------------------------
 	void setDisableSettings(bool bDisable) { // To disable settings saving/loading (ie: handled in ofApp)
-		ofLogNotice("ofxEdgeCannyDetector") << "setDisableSettings() bEnableSettings: " << bEnableSettings;
+		ofLogNotice("ofxSurfingCanny") << "setDisableSettings() bEnableSettings: " << bEnableSettings;
 
 		bEnableSettings = !bDisable;
 	}
@@ -76,18 +75,18 @@ private:
 	const bool DEFAULT_AUTO_SAVE = true;
 
 	// `bin/data/path_folder` folder containering settings files
-	std::string path_folder = "ofxEdgeCannyDetector";
+	std::string path_folder = "ofxSurfingCanny";
 
 public:
 
 	//----------------------------------
 	void setup() {
-		ofLogNotice("ofxEdgeCannyDetector") << "setup()";
+		ofLogNotice("ofxSurfingCanny") << "setup()";
 
 		// Load shaders
 		// TODO: move to /bin/data/shaders/...
-		gaussian.load("../../../../../addons/ofxEdgeCannyDetector/src/Shaders/gaussian");
-		eDetector.load("../../../../../addons/ofxEdgeCannyDetector/src/Shaders/sobel");
+		gaussian.load("../../../../../addons/ofxSurfingCanny/src/Shaders/gaussian");
+		eDetector.load("../../../../../addons/ofxSurfingCanny/src/Shaders/sobel");
 
 		size = glm::vec2(ofGetWidth(), ofGetHeight());
 		f.allocate(size.x, size.y);
@@ -97,15 +96,15 @@ public:
 		setupGui();
 		startup();
 
-		ofLogNotice("ofxEdgeCannyDetector") << "setup() complete.";
-		ofLogNotice("ofxEdgeCannyDetector") << "Press 'g' to toggle GUI";
+		ofLogNotice("ofxSurfingCanny") << "setup() complete.";
+		ofLogNotice("ofxSurfingCanny") << "Press 'g' to toggle GUI";
 	}
 
 private:
 
 	//----------------------------------
 	void setupParameters() {
-		ofLogNotice("ofxEdgeCannyDetector") << "setupParameters()";
+		ofLogNotice("ofxSurfingCanny") << "setupParameters()";
 
 		// Setup parameters with default values
 		parameters.setName("Canny Edge");
@@ -127,7 +126,7 @@ private:
 
 	//----------------------------------
 	void setupCallbacks() {
-		ofLogNotice("ofxEdgeCannyDetector") << "setupCallbacks()";
+		ofLogNotice("ofxSurfingCanny") << "setupCallbacks()";
 
 		// Setup callbacks using lambda event listeners
 		e_vResetButton = vResetButton.newListener([this]() {
@@ -146,9 +145,9 @@ private:
 
 	//----------------------------------
 	void setupGui() {
-		ofLogNotice("ofxEdgeCannyDetector") << "setupGui()";
+		ofLogNotice("ofxSurfingCanny") << "setupGui()";
 
-		gui.setup("ofxEdgeCannyDetector");
+		gui.setup("ofxSurfingCanny");
 		gui.add(parameters);
 		gui.add(parametersSession);
 
@@ -157,7 +156,7 @@ private:
 
 	//----------------------------------
 	void startup() {
-		ofLogNotice("ofxEdgeCannyDetector") << "startup()";
+		ofLogNotice("ofxSurfingCanny") << "startup()";
 
 		// Auto-load on startup if enabled
 		if (bAutoSaveLoad && bEnableSettings) {
@@ -172,7 +171,7 @@ public:
 
 	//----------------------------------
 	void resetToDefaults() {
-		ofLogNotice("ofxEdgeCannyDetector") << "resetToDefaults()";
+		ofLogNotice("ofxSurfingCanny") << "resetToDefaults()";
 
 		highThreshold = DEFAULT_HIGH_THRESHOLD;
 		lowThreshold = DEFAULT_LOW_THRESHOLD;
@@ -208,7 +207,7 @@ public:
 	}
 
 	//----------------------------------
-	void draw() {
+	void drawGui() {
 		if (bGui) {
 			gui.draw();
 
@@ -223,7 +222,7 @@ public:
 
 	//----------------------------------
 	void toggleGui() {
-		ofLogNotice("ofxEdgeCannyDetector") << "toggleGui() Settings auto-saved on exit";
+		ofLogNotice("ofxSurfingCanny") << "toggleGui() Settings auto-saved on exit";
 
 		bGui = !bGui;
 	}
@@ -237,11 +236,11 @@ public:
 
 	//----------------------------------
 	void exit() {
-		ofLogNotice("ofxEdgeCannyDetector") << "exit()";
+		ofLogNotice("ofxSurfingCanny") << "exit()";
 
 		// Auto-save on exit if enabled
 		if (bAutoSaveLoad) {
-			ofLogNotice("ofxEdgeCannyDetector") << "exit() Settings auto-saved on exit";
+			ofLogNotice("ofxSurfingCanny") << "exit() Settings auto-saved on exit";
 			save(parameters);
 			save(parametersSession);
 		}
@@ -255,27 +254,27 @@ private:
 
 	//----------------------------------
 	void load(ofParameterGroup & parameters_, std::string _path_Folder = "") {
-		ofLogNotice("ofxEdgeCannyDetector") << "Load: " << parameters_.getName();
+		ofLogNotice("ofxSurfingCanny") << "Load: " << parameters_.getName();
 
 		if (_path_Folder.empty()) _path_Folder = path_folder;
 		// Usar ofFilePath::join para construir el path relativo a /bin/data/
 		std::string filename = parameters_.getName() + ".json";
 		std::string relPath = ofFilePath::join(_path_Folder, filename);
 		std::string dataPath = ofToDataPath(relPath, true); // true = relative to data folder
-		ofLogNotice("ofxEdgeCannyDetector") << "dataPath: " << dataPath;
+		ofLogNotice("ofxSurfingCanny") << "dataPath: " << dataPath;
 
 		loadSettings(parameters_, dataPath);
 	}
 
 	//----------------------------------
 	void save(ofParameterGroup & parameters_, std::string _path_Folder = "") {
-		ofLogNotice("ofxEdgeCannyDetector") << "Save: " << parameters_.getName();
+		ofLogNotice("ofxSurfingCanny") << "Save: " << parameters_.getName();
 
 		if (_path_Folder.empty()) _path_Folder = path_folder;
 		std::string filename = parameters_.getName() + ".json";
 		std::string relPath = ofFilePath::join(_path_Folder, filename);
 		std::string dataPath = ofToDataPath(relPath, true);
-		ofLogNotice("ofxEdgeCannyDetector") << "dataPath: " << dataPath;
+		ofLogNotice("ofxSurfingCanny") << "dataPath: " << dataPath;
 
 		saveSettings(parameters_, dataPath);
 	}
@@ -331,5 +330,3 @@ private:
 		return b;
 	}
 };
-
-#endif /* ofxEdgeCannyDetector_hpp */
