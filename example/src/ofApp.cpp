@@ -18,12 +18,12 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	// Method 1: Using begin/end workflow (captures drawing commands)
+	// Draw in between begin/end workflow
 	canny.begin();
 	img.draw(0, 0);
 	canny.end();
 
-	// Update processes the texture when needed
+	// Update processes the texture
 	canny.update();
 }
 
