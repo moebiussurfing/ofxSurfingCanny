@@ -10,8 +10,6 @@ Developed for seamless integration with AI workflows and real-time 3D applicatio
 Check original information here: [README.md](https://github.com/pierrextardif/ofxEdgeCannyDetector/blob/master/README.md).  
 Thanks!
 
-![](before-after.png)
-
 ## Added Features
 - Customize threshold parameters
 - Persistent `json` settings (preset & session)
