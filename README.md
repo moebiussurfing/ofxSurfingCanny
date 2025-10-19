@@ -3,6 +3,8 @@
 *Edge detection algorithm based on an Edge Canny Detection shader add-on.  
 Developed for seamless integration with AI workflows and real-time 3D applications.*
 
+![](Screenshot.png)
+
 > [!NOTE]  
 > This add-on is based on [ofxEdgeCannyDetector](https://github.com/pierrextardif/ofxEdgeCannyDetector) from [pierrextardif](https://github.com/pierrextardif).  
 Check original information here: [README.md](https://github.com/pierrextardif/ofxEdgeCannyDetector/blob/master/README.md).  
@@ -50,7 +52,7 @@ canny.end();
 - Gradient Scale
 - Gaussian
 
-## Technical Notes
+## Export file (TODO)
 
 - Output: 1024x1024 RGBA
 - File format: PNG
@@ -73,3 +75,4 @@ canny.end();
 - Improve viewport custom size
 - Add enable toggle
 - Improve draw separated from begin/end process
+- Export
