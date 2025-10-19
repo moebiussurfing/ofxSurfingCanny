@@ -13,7 +13,7 @@ Check original information here: [README.md](https://github.com/pierrextardif/of
 
 ## Added Features
 - Customize threshold parameters
-- Improved API.
+- Improved API
 - Persistent `json` settings (preset & session)
 - Improved UI workflow
 

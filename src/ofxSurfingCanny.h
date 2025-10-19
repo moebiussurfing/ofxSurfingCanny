@@ -387,11 +387,11 @@ public:
 	void toggleEnable() {
 		ofLogNotice("ofxSurfingCanny") << "toggleEnable()";
 		bEnable = !bEnable;
-
 	}
 
 	//----------------------------------
 	void setEnableGui(bool enable) {
+		ofLogNotice("ofxSurfingCanny") << "setEnableGui():" << enable;
 		bGui = enable;
 	}
 
