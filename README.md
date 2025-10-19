@@ -1,4 +1,6 @@
 # ofxSurfingCanny
+> [!WARNING]  
+> WIP
 
 *Edge detection algorithm based on an Edge Canny Detection shader add-on.  
 Developed for seamless integration with AI workflows and real-time 3D applications.*
