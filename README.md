@@ -1,47 +1,122 @@
-# ofxEdgeCannyDetector
-Simple OpenFrameworks edge detection algorithm based on Edge Canny Detection.
-</br>
-ref : </br>
-http://www.pages.drexel.edu/~nk752/Research/cannyTut2.html
-https://towardsdatascience.com/canny-edge-detection-step-by-step-in-python-computer-vision-b49c3a2d8123
-https://docs.opencv.org/2.4/doc/tutorials/imgproc/imgtrans/canny_detector/canny_detector.html
-</br>
-</br>
+# ofxSurfingDepthMap
 
-- - - -
+*Depth-map shader based add-on. Developed for seamless integration with AI workflows and real-time 3D applications.*
 
-![.](Assets/1.png)
+![](Screenshot.png)
 
-- - - -
-## Getting Started
+## Features
 
-### Installs
+- **3 Depth Mapping Modes**: Linear, Logarithmic, and Focus Range
+- **Manual Camera Control**: Bypass camera near/far planes with manual clipping
+- **Real-time Preview**: Toggle between color and depth map rendering
+- **ControlNet Ready**: Outputs grayscale depth maps suitable for AI processing
+- **Flexible Controls**: Contrast, brightness, gamma, and inversion parameters
+- **Auto Focus**: Intelligent depth range calculation for complex scenes
 
-### 1)Installing OpenFrameworks
+## Quick Start
 
-Get the latest OpenFrameworks version from [here](https://openframeworks.cc/download)(linux armV6), and follow [this tutorial](https://openframeworks.cc/setup/xcode/) to get set up with the openframeworks on Mac OS.
-</br>
-Make sure you can run some of the examples before proceeding any further (for example : OF_Install_Directory/examples/3DPrimitivesExample/).
+```cpp
+// ofApp.h
 
-### 2) Installing the Addon
+#include "ofxSurfingDepthMap.h"
 
-</br>
-Drop the ofxEdgeCannyDetector in your addons folder.
-</br>
+ofxSurfingDepthMap depthMap;
+ofEasyCam camera;
 
-## Example
+//--
 
-Just try running [the example](./exampleEdgeCannyDetector) : import it with the Project Generator, to link it, and run it in Xcode.
+// ofApp.cpp
 
-## Author
+// setup()
+depthMap.setup(&camera);
 
-* _pierre Tardif_   [codingcoolsh.it](codingcoolsh.it)   :floppy_disk:
+// draw()
+depthMap.begin();
+{
+    camera.begin();
+    {
+        // Draw your 3D scene here
+        drawScene();
+    }
+    camera.end();
+}
+depthMap.end();
 
-## License
+depthMap.draw(0, 0);
+```
 
-This project is licensed under the MIT License - see the [LICENSE.md](./LICENSE) file for details.
+## Depth Modes
 
+### 1. Linear Mode
+Direct linear mapping from near to far planes. Best for simple scenes with uniform depth distribution.
 
-## Acknowledgments
+### 2. Logarithmic Mode  
+Applies logarithmic curve for better perspective handling. Use `Log Power` parameter to control curve aggressiveness (0.05 = subtle, 10.0 = extreme).
 
-* [ofxCV](https://github.com/kylemcdonald/ofxCv/tree/master/example-edge) already uses it, but I wanted to have my own version of it, which I could use in shaders - no extra buffer / library - .
+### 3. Focus Range Mode
+Concentrates contrast in a specific depth range, compressing everything else. Perfect for emphasizing specific subjects while de-emphasizing background/foreground.
+
+## Key Parameters
+
+### Camera Clips
+- **Enable**: Use manual near/far planes instead of camera settings
+- **Near/Far**: Manual clipping plane distances
+
+### Focus Range
+- **Near/Far**: Depth boundaries for high contrast zone  
+- **Auto Focus**: Automatically calculates optimal focus range based on current scene
+
+### FX Tweaks
+- **Contrast**: Enhances depth separation (1.0 = neutral)
+- **Brightness**: Shifts depth map lighter/darker (0.0 = neutral)
+- **Gamma**: Adjusts response curve (1.0 = linear)
+- **Invert**: Flips depth mapping (close=black, far=white)
+
+## Example Controls
+
+- **SPACE**: Toggle depth/color view
+- **S**: Save depth map as PNG
+- **G**: Toggle GUI visibility
+- **R**: Reset
+
+## Workflow Tips
+
+1. **Start with Linear mode** for quick setup
+2. **Enable Manual Clips** for precise depth control (camera clips are often suboptimal)
+3. **Use Logarithmic mode** when linear produces flat gray areas
+4. **Try Focus Range + Auto Focus** for complex scenes with specific subjects
+5. **Adjust Contrast and Gamma** after selecting the right mode
+
+## Technical Notes
+
+- Output: 1024x1024 RGBA FBO (RGB channels contain grayscale depth)
+- Depth calculation: View-space Z distance with proper perspective correction  
+- File format: PNG with embedded depth information
+- Export image files to custom folders (ie: `D:/ComfyUI/input/depth-maps/`).
+- Shader requirements: OpenGL 3.3+ (shadersGL3 folder)
+
+## Installation
+
+1. Clone to `openFrameworks/addons/`
+2. Add the addon to your project when using **Project Generator**
+3. Copy `depth.vert` and `depth.frag` to `bin/data/shadersGL3/`
+4. Include `ofxSurfingDepthMap.h` in your project
+
+## Dependencies
+
+- openFrameworks 0.12.0+
+- ofxGui
+
+## Tested Systems
+- Windows 11 / VS 2026 Insiders / of_v0.12.1_vs_64_release 
+- macOS Tahoe 26.0 / Xcode 26.0 / of_v0.12.1_osx_release
+
+## Use Cases
+
+- **ControlNet Depth**: Generate depth maps for AI image generation
+- **Post-processing**: Create depth-based effects and compositing
+- **Analysis**: Visualize 3D scene depth distribution  
+- **Prototyping**: Quick depth visualization for 3D applications
+
+## TODO
+- Fix GLSL 120.
