@@ -207,7 +207,8 @@ private:
 		gui.add(parametersSession);
 
 		auto & g = gui.getGroup(parametersSession.getName());
-		g.minimizeAll();
+		g.getGroup(parametersSettingsManager.getName()).minimize();
+		g.minimize();
 
 		bGui = true;
 	}
@@ -249,7 +250,7 @@ public:
 
 	//----------------------------------
 	void begin() {
-		if (!bEnable) return;
+		//if (!bEnable) return;
 
 		fboInput.begin();
 		ofClear(0, 0, 0, 255);
@@ -257,7 +258,7 @@ public:
 
 	//----------------------------------
 	void end() {
-		if (!bEnable) return;
+		//if (!bEnable) return;
 
 		fboInput.end();
 		texInput = &fboInput.getTexture();
