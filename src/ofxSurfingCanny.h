@@ -384,6 +384,13 @@ public:
 	}
 
 	//----------------------------------
+	void toggleEnable() {
+		ofLogNotice("ofxSurfingCanny") << "toggleEnable()";
+		bEnable = !bEnable;
+
+	}
+
+	//----------------------------------
 	void setEnableGui(bool enable) {
 		bGui = enable;
 	}
@@ -394,7 +401,7 @@ public:
 			toggleGui();
 		}
 		if (key == 'e' || key == 'E') {
-			bEnable = !bEnable;
+			toggleEnable();
 		}
 	}
 
@@ -412,7 +419,7 @@ public:
 		// No need to manually remove listeners when using ofEventListener objects
 	}
 
-	//--
+	//----
 
 private:
 	//----------------------------------

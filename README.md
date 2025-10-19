@@ -1,19 +1,19 @@
 # ofxSurfingCanny
-> [!WARNING]  
+> [!WARNING]
 > WIP
 
-*Edge detection algorithm based on an Edge Canny Detection shader add-on.  
+*Edge detection algorithm based on an Edge Canny Detection shader add-on.
 Developed for seamless integration with AI workflows and real-time 3D applications.*
 
 ![](Screenshot.png)
 
-> [!NOTE]  
-> This add-on is based on [ofxEdgeCannyDetector](https://github.com/pierrextardif/ofxEdgeCannyDetector) from [pierrextardif](https://github.com/pierrextardif).  
-Check original information here: [README.md](https://github.com/pierrextardif/ofxEdgeCannyDetector/blob/master/README.md).  
-Thanks!
+> [!NOTE]
+> This add-on is based on [ofxEdgeCannyDetector](https://github.com/pierrextardif/ofxEdgeCannyDetector) from [pierrextardif](https://github.com/pierrextardif). Thanks!
+Check original information here: [README.md](https://github.com/pierrextardif/ofxEdgeCannyDetector/blob/master/README.md).
 
 ## Added Features
 - Customize threshold parameters
+- Improved API.
 - Persistent `json` settings (preset & session)
 - Improved UI workflow
 
@@ -36,17 +36,24 @@ ofImage img;
 canny.setup();
 img.load("TheDavid.png");
 
-// draw()
+// udate()
 canny.begin();
-img.draw(0, 0);
+{
+  img.draw();
+}
 canny.end();
+
+// draw()
+canny.draw();
+canny.drawGui();
+
 ```
 
 ## Key Parameters
 
 ### ofParameter settings
 - High Threshold
-- Low Threshold 
+- Low Threshold
 - Gradient Scale
 - Gaussian
 
@@ -62,7 +69,7 @@ canny.end();
 - ofxGui
 
 ## Tested Systems
-- Windows 11 / VS 2026 Insiders / of_v0.12.1_vs_64_release 
+- Windows 11 / VS 2026 Insiders / of_v0.12.1_vs_64_release
 
 ## Use Cases
 
@@ -70,7 +77,4 @@ canny.end();
 - More info: https://docs.comfy.org/tutorials/flux/flux-1-controlnet
 
 ## TODO
-- Improve viewport custom size
-- Add enable toggle
-- Improve draw separated from begin/end process
 - Export
