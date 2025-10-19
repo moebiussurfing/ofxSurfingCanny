@@ -24,8 +24,8 @@ private:
 	glm::vec2 size;
 	ofFbo fboInput; // Input texture for processing
 	ofFbo fboOutput; // Processed output
+	ofFbo fboGaussian; // Temporary FBO for gaussian pass
 	ofTexture * texInput; // Pointer to input texture
-	ofFbo fboGaussian; // En vez de crear uno temporal cada frame
 
 	bool bNeedUpdate = false;
 
@@ -81,14 +81,36 @@ private:
 public:
 	//----------------------------------
 	void setup() {
-		ofLogNotice("ofxSurfingCanny") << "setup()";
+		setup(ofGetWidth(), ofGetHeight());
+	}
+
+	//----------------------------------
+	void setup(int width, int height) {
+		ofLogNotice("ofxSurfingCanny") << "setup(" << width << ", " << height << ")";
 
 		// Load shaders
 		// TODO: move to /bin/data/shaders/...
 		gaussian.load("../../../../../addons/ofxSurfingCanny/src/Shaders/gaussian");
 		eDetector.load("../../../../../addons/ofxSurfingCanny/src/Shaders/sobel");
 
-		size = glm::vec2(ofGetWidth(), ofGetHeight());
+		allocate(width, height);
+
+		setupParameters();
+		setupCallbacks();
+		setupGui();
+		startup();
+
+		ofLogNotice("ofxSurfingCanny") << "setup() complete.";
+		ofLogNotice("ofxSurfingCanny") << "Press 'g' to toggle GUI, 'e' to toggle Enable";
+	}
+
+private:
+	//----------------------------------
+	void allocate(int width, int height) {
+		ofLogNotice("ofxSurfingCanny") << "allocate(" << width << ", " << height << ")";
+
+		size = glm::vec2(width, height);
+
 		fboInput.allocate(size.x, size.y, GL_RGBA);
 		fboOutput.allocate(size.x, size.y, GL_RGBA);
 		fboGaussian.allocate(size.x, size.y, GL_RGBA);
@@ -104,14 +126,30 @@ public:
 		fboGaussian.begin();
 		ofClear(0, 0, 0, 255);
 		fboGaussian.end();
+	}
 
-		setupParameters();
-		setupCallbacks();
-		setupGui();
-		startup();
+public:
+	//----------------------------------
+	void setSize(int width, int height) {
+		if (size.x != width || size.y != height) {
+			ofLogNotice("ofxSurfingCanny") << "setSize(" << width << ", " << height << ")";
+			allocate(width, height);
+		}
+	}
 
-		ofLogNotice("ofxSurfingCanny") << "setup() complete.";
-		ofLogNotice("ofxSurfingCanny") << "Press 'g' to toggle GUI";
+	//----------------------------------
+	glm::vec2 getSize() {
+		return size;
+	}
+
+	//----------------------------------
+	int getWidth() {
+		return size.x;
+	}
+
+	//----------------------------------
+	int getHeight() {
+		return size.y;
 	}
 
 private:
@@ -167,6 +205,9 @@ private:
 		gui.setup("ofxSurfingCanny");
 		gui.add(parameters);
 		gui.add(parametersSession);
+
+		auto & g = gui.getGroup(parametersSession.getName());
+		g.minimizeAll();
 
 		bGui = true;
 	}
@@ -293,20 +334,20 @@ private:
 
 public:
 	//----------------------------------
-	// Draw processed output at position with size
-	void draw(float x = 0, float y = 0, float w = -1, float h = -1) {
-		if (!bEnable) return;
-
-		if (w == -1) w = size.x;
-		if (h == -1) h = size.y;
-
-		fboOutput.draw(x, y, w, h);
+	// Draw processed output (full size by default)
+	void draw() {
+		draw(0, 0, size.x, size.y);
 	}
 
 	//----------------------------------
-	// Draw at position maintaining aspect ratio
-	void draw(float x, float y) {
-		draw(x, y, size.x, size.y);
+	// Draw processed output at position with size
+	void draw(float x, float y, float w, float h) {
+		//if (!bEnable) return;
+
+		if (bEnable)
+			fboOutput.draw(x, y, w, h);
+		else
+			fboInput.draw(x, y, w, h);
 	}
 
 	//----------------------------------
@@ -327,7 +368,7 @@ public:
 			gui.draw();
 
 			// Draw info text
-			std::string info = "Press 'g' to toggle GUI\n";
+			std::string info = "Press 'g' to toggle GUI, 'e' to toggle Enable\n";
 			info += "FPS: " + ofToString(ofGetFrameRate(), 0);
 			ofDrawBitmapStringHighlight(info, 10, ofGetHeight() - 40);
 		}
@@ -361,7 +402,7 @@ public:
 		ofLogNotice("ofxSurfingCanny") << "exit()";
 
 		// Auto-save on exit if enabled
-		if (bAutoSaveLoad) {
+		if (bAutoSaveLoad && bEnableSettings) {
 			ofLogNotice("ofxSurfingCanny") << "exit() Settings auto-saved on exit";
 			save(parameters);
 			save(parametersSession);

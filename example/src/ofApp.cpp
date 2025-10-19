@@ -2,29 +2,36 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	canny.setup();
-
-	// Load image
+	// Load image first
 	img.load("TheDavid.png");
+
+	// Setup canny with image dimensions
+	canny.setup(img.getWidth(), img.getHeight());
+
+	// Or use default window size:
+	// canny.setup();
+
+	ofLogNotice("ofApp") << "Image size: " << img.getWidth() << "x" << img.getHeight();
+	ofLogNotice("ofApp") << "Canny size: " << canny.getWidth() << "x" << canny.getHeight();
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	// Update processes the texture when needed
-	canny.update();
-}
-
-//--------------------------------------------------------------
-void ofApp::draw() {
-	ofBackground(0);
 
 	// Method 1: Using begin/end workflow (captures drawing commands)
 	canny.begin();
 	img.draw(0, 0);
 	canny.end();
 
-	// Draw processed output
-	// Full screen
+	// Update processes the texture when needed
+	canny.update();
+}
+
+//--------------------------------------------------------------
+void ofApp::draw() {
+	ofBackground(128);
+
+	// Draw processed output - full screen
 	canny.draw();
 
 	// Or with custom size:
@@ -32,6 +39,10 @@ void ofApp::draw() {
 
 	// Or get texture for custom rendering:
 	// canny.getTexture().draw(x, y, w, h);
+
+	//--
+
+	// UI
 
 	// Draw original image thumbnail
 	ofPushStyle();
@@ -47,11 +58,6 @@ void ofApp::draw() {
 
 	// Draw GUI
 	canny.drawGui();
-
-	// Alternative Method 2: Direct texture processing (without begin/end)
-	// Just process the image texture directly:
-	// canny.processTexture(img.getTexture());
-	// canny.draw(0, 0);
 }
 
 //--------------------------------------------------------------
