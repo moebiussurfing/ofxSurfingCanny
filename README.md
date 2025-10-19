@@ -17,8 +17,6 @@ Thanks!
 - Persistent `json` settings (preset & session)
 - Improved UI workflow
 
-![](Screenshot.png)
-
 ## Quick Start
 
 ```cpp
