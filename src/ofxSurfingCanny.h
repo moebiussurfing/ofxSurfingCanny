@@ -396,16 +396,6 @@ public:
 	}
 
 	//----------------------------------
-	void keyPressed(int key) {
-		if (key == 'g' || key == 'G') {
-			toggleGui();
-		}
-		if (key == 'e' || key == 'E') {
-			toggleEnable();
-		}
-	}
-
-	//----------------------------------
 	void exit() {
 		ofLogNotice("ofxSurfingCanny") << "exit()";
 

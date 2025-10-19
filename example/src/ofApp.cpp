@@ -67,5 +67,11 @@ void ofApp::exit() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-	canny.keyPressed(key);
+
+	if (key == 'g' || key == 'G') {
+		canny.toggleGui();
+	}
+	if (key == 'e' || key == 'E') {
+		canny.toggleEnable();
+	}
 }
